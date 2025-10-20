@@ -1,19 +1,31 @@
 const WIDTH = 800;
 const HEIGHT = (WIDTH * 9) / 16;
-let stat = 0; // 0: 시작 전, 1: 세팅 중, 2: 게임 중, 3: 집계 중, 4: 결과 표시
+let stat = 0; // 0: 시작 전, 1: 규칙 안내, 2: 로딩 중, 3: 게임 중, 4: 집계 중, 5: 끝
 let change = true;
 
+function fillAndLineSet(fr, fg, fb, sr, sg, sb, sw) {
+  // 채우기 + 윤곽선 설정
+  fill(fr, fg, fb);
+  if (sw == 0) noStroke();
+  else {
+    stroke(sr, sg, sb);
+    strokeWeight(sw);
+  }
+}
+
+function textSet(tr, tg, tb, ts) {
+  // 텍스트 설정
+  fill(tr, tg, tb);
+  noStroke();
+  textSize(ts);
+}
+
 function set0() {
-  stroke(0, 0, 0);
-  strokeWeight(10);
-  fill(255, 255, 255);
-  rectMode(CORNERS);
-  rect(WIDTH * 0.05, HEIGHT * 0.05, WIDTH * 0.95, HEIGHT * 0.95);
-
-  strokeWeight(5);
+  // 0번 장면 시작
+  background(200);
+  fillAndLineSet(255, 255, 255, 0, 0, 0, 3);
   circle(WIDTH * 0.5, HEIGHT * 0.7, WIDTH * 0.125);
-
-  fill(0, 200, 255);
+  fillAndLineSet(0, 150, 255, 0, 0, 0, 0);
   triangle(
     WIDTH * 0.477,
     HEIGHT * 0.643,
@@ -22,20 +34,19 @@ function set0() {
     WIDTH * 0.537,
     HEIGHT * 0.7
   );
-
-  textSize(WIDTH * 0.08);
-  textAlign(CENTER, CENTER);
-  fill(0, 0, 0);
-  noStroke();
+  fillAndLineSet(255, 255, 255, 0, 0, 0, 3);
+  rect(WIDTH * 0.2, HEIGHT * 0.2, WIDTH * 0.8, HEIGHT * 0.4);
+  textSet(0, 0, 0, WIDTH * 0.08);
   text("퍼셉트론 게임", WIDTH * 0.5, HEIGHT * 0.3);
 }
 
 function keep0() {
+  // 0번 장면 지속
   if (
     (mouseX - WIDTH * 0.5) ** 2 + (mouseY - HEIGHT * 0.7) ** 2 <=
     (WIDTH * 0.0625) ** 2
   ) {
-    fill(255, 200, 0);
+    fillAndLineSet(255, 100, 0, 0, 0, 0, 0);
     triangle(
       WIDTH * 0.477,
       HEIGHT * 0.643,
@@ -45,7 +56,7 @@ function keep0() {
       HEIGHT * 0.7
     );
   } else {
-    fill(0, 200, 255);
+    fillAndLineSet(0, 150, 255, 0, 0, 0, 0);
     triangle(
       WIDTH * 0.477,
       HEIGHT * 0.643,
@@ -57,24 +68,56 @@ function keep0() {
   }
 }
 
+function set1() {
+  // 1번 장면 시작
+  background(200);
+  textSet(0, 0, 0, WIDTH * 0.025);
+  text(
+    "<규칙>\n\n검은 점과 흰 점이 주어짐 (전체 1000개 중 랜덤 200개)\n빨간색 선을 움직여 화살표가 있는 쪽에만 흰 점이 위치하도록 해야 함\n화살표는 선 위에 있는 중심점에 달려 있으며, 항상 선에 수직\nA/D키로 중심점 이동 (D키가 화살표 쪽)\nW와 S키로 선 회전 (W키가 시계 방향)\n선 이동하면 미끄러짐 작용함\n15초 후 올바르게 분류한 점의 수가 점수가 됨 (시작할 때 보여주지 않은 점 포함)\n\n스페이스 바 눌러 시작",
+    WIDTH * 0.5,
+    HEIGHT * 0.5
+  );
+}
+
+function keep1() {
+  // 1번 장면 지속
+  if (key == " ") {
+    stat = 2;
+    change = true;
+  }
+}
+
+function set2() {
+  // 2번 장면 시작
+  background(200);
+}
+
+function mouseClicked() {
+  if (stat == 0) {
+    if (
+      (mouseX - WIDTH * 0.5) ** 2 + (mouseY - HEIGHT * 0.7) ** 2 <=
+      (WIDTH * 0.0625) ** 2
+    ) {
+      stat = 1;
+      change = true;
+    }
+  }
+}
+
 function setup() {
   createCanvas(WIDTH, HEIGHT);
-  background(200);
+  rectMode(CORNERS);
+  textAlign(CENTER, CENTER);
 }
 
 function draw() {
   if (change) {
-    switch (stat) {
-      case 0:
-        set0();
-        break;
-    }
+    if (stat == 0) set0();
+    else if (stat == 1) set1();
+    else if (stat == 2) set2();
     change = false;
   } else {
-    switch (stat) {
-      case 0:
-        keep0();
-        break;
-    }
+    if (stat == 0) keep0();
+    else if (stat == 1) keep1();
   }
 }
