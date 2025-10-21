@@ -1,8 +1,10 @@
 const WIDTH = 800;
 const HEIGHT = (WIDTH * 9) / 16;
-let stat = 0; // 0: 시작 전, 1: 규칙 안내, 2: 준비, 3: 게임 중, 4: 집계 중, 5: 끝
+let stat = 0; // 0: 시작 전, 1: 규칙 안내, 2: 준비, 3: 점 표시, 4: 게임 중, 5: 결과 계산, 6: 끝
 let change = true;
-let timeTrack1, timeTrack2;
+let timeTrack1, timeTrack2, tmp;
+const show1 = new Array(100).fill([0, 0]);
+const show2 = new Array(100).fill([0, 0]);
 
 function fillAndLineSet(fr, fg, fb, sr, sg, sb, sw) {
   // 채우기 + 윤곽선 설정
@@ -97,7 +99,7 @@ function set2() {
 function keep2() {
   // 2번 장면 지속
   background(230);
-  textSet(0, 128, 0, WIDTH * 0.2);
+  textSet(255, 100, 0, WIDTH * 0.2);
   timeTrack2 = new Date().getTime();
   if (timeTrack2 - timeTrack1 >= 3000) {
     stat = 3;
@@ -114,6 +116,21 @@ function keep2() {
 function set3() {
   // 3번 장면 시작
   background(230);
+  fillAndLineSet(255, 255, 255, 0, 0, 0, 2);
+  for (let i = 0; i < 10; i++) {
+    tmp = i * 50 + Math.floor(50 * Math.random());
+    show1[i][0] = pts1[tmp][0];
+    show1[i][1] = pts1[tmp][1];
+    circle(WIDTH * pts1[tmp][0], HEIGHT * pts1[tmp][1], WIDTH * 0.01);
+  }
+
+  fillAndLineSet(0, 0, 0, 0, 0, 0, 2);
+  for (let i = 0; i < 10; i++) {
+    tmp = i * 50 + Math.floor(50 * Math.random());
+    show2[i][0] = pts2[tmp][0];
+    show2[i][1] = pts2[tmp][1];
+    circle(WIDTH * pts2[tmp][0], HEIGHT * pts2[tmp][1], WIDTH * 0.01);
+  }
 }
 
 function mouseClicked() {
