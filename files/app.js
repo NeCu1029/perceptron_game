@@ -1,8 +1,8 @@
 const WIDTH = 800;
 const HEIGHT = (WIDTH * 9) / 16;
-let stat = 0; // 0: 시작 전, 1: 규칙 안내, 2: 준비, 3: 점 표시, 4: 게임 중, 5: 결과 계산, 6: 끝
+let stat = 0;
 let change = true;
-let centX, centY, rot, lvel, avel;
+let centX, centY, rot, lvel, avel, score;
 let timeTrack1, timeTrack2, tmp;
 const show1 = [
   [0, 0],
@@ -28,6 +28,10 @@ const show2 = [
   [0, 0],
   [0, 0],
 ];
+
+function ccw(ax, ay, bx, by, cx, cy) {
+  return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+}
 
 function fillAndLineSet(fr, fg, fb, sr, sg, sb, sw) {
   // 채우기 + 윤곽선 설정
@@ -158,7 +162,7 @@ function set1() {
   background(230);
   textSet(0, 0, 0, WIDTH * 0.025);
   text(
-    "<규칙>\n\n파란색 점과 주황색 점이 주어집니다. (전체 1000개 중 랜덤 20개)\n검은색 선을 움직여 화살표가 있는 쪽에만 주황색 점이 위치하도록 합니다.\n화살표는 선 위에 있는 중심점에 달려 있으며, 항상 선에 수직합니다.\nW/S키로 화살표를 따라 중심점을 이동할 수 있습니다. (W키가 화살표 쪽)\nA/D키로 중심점을 기준으로 선을 회전할 수 있습니다. (D키가 시계 방향)\n선이 이동할 때 미끄러짐이 작용합니다.\n30초 후 올바르게 분류한 점의 개수가 점수가 됩니다. (시작할 때 보여주지 않은 점 포함)\n\n스페이스 바를 눌러 시작",
+    "<규칙>\n\n파란색 점과 주황색 점이 주어집니다. (전체 1000개 중 랜덤 20개)\n검은색 선을 움직여 화살표가 있는 쪽에만 주황색 점이 위치하도록 합니다.\n화살표는 선 위에 있는 중심점에 달려 있으며, 항상 선에 수직합니다.\nW/S키로 화살표를 따라 중심점을 이동할 수 있습니다. (W키가 화살표 쪽)\nA/D키로 중심점을 기준으로 선을 회전할 수 있습니다. (D키가 시계 방향)\n선이 이동할 때 미끄러짐이 작용합니다.\n15초 후 올바르게 분류한 점의 개수가 점수가 됩니다. (시작할 때 보여주지 않은 점 포함)\n\n스페이스 바를 눌러 시작",
     WIDTH * 0.5,
     HEIGHT * 0.5
   );
@@ -166,7 +170,7 @@ function set1() {
 
 function keep1() {
   // 1번 장면 지속
-  if (key == " ") {
+  if (key == " " && keyIsPressed) {
     stat = 2;
     change = true;
   }
@@ -211,6 +215,7 @@ function set3() {
   rot = Math.random() * 2 * Math.PI;
   lvel = 0;
   avel = 0;
+  score = 0;
   timeTrack1 = new Date().getTime();
 
   drawGame();
@@ -219,7 +224,7 @@ function set3() {
 function keep3() {
   // 3번 장면 지속
   timeTrack2 = new Date().getTime();
-  if (timeTrack2 - timeTrack1 >= 30000) {
+  if (timeTrack2 - timeTrack1 >= 15000) {
     stat = 4;
     change = true;
   }
@@ -298,7 +303,7 @@ function set4() {
 function keep4() {
   // 4번 장면 지속
   timeTrack2 = new Date().getTime();
-  if (timeTrack2 - timeTrack1 >= 2000) {
+  if (timeTrack2 - timeTrack1 >= 2500) {
     stat = 5;
     change = true;
   }
@@ -307,6 +312,66 @@ function keep4() {
 function set5() {
   // 5번 장면 시작
   background(230);
+  for (let i = 0; i < 500; i++) {
+    if (
+      ccw(
+        centX,
+        centY,
+        centX + Math.cos(rot),
+        centY + Math.sin(rot),
+        WIDTH * pts1[i][0],
+        HEIGHT * pts1[i][1]
+      ) < 0
+    ) {
+      fillAndLineSet(0, 255, 0, 0, 0, 0, 1);
+      score++;
+    } else fillAndLineSet(255, 0, 0, 0, 0, 0, 1);
+    circle(WIDTH * pts1[i][0], HEIGHT * pts1[i][1], WIDTH * 0.01);
+  }
+  for (let i = 0; i < 500; i++) {
+    if (
+      ccw(
+        centX,
+        centY,
+        centX + Math.cos(rot),
+        centY + Math.sin(rot),
+        WIDTH * pts2[i][0],
+        HEIGHT * pts2[i][1]
+      ) > 0
+    ) {
+      fillAndLineSet(0, 255, 0, 0, 0, 0, 1);
+      score++;
+    } else fillAndLineSet(255, 0, 0, 0, 0, 0, 1);
+    circle(WIDTH * pts2[i][0], HEIGHT * pts2[i][1], WIDTH * 0.01);
+  }
+
+  timeTrack1 = new Date().getTime();
+}
+
+function keep5() {
+  // 5번 장면 지속
+  timeTrack2 = new Date().getTime();
+  if (timeTrack2 - timeTrack1 >= 2500) {
+    stat = 6;
+    change = true;
+  }
+}
+
+function set6() {
+  // 6번 장면 시작
+  background(230);
+  textSet(0, 150, 255, WIDTH * 0.2);
+  text(`${score}점`, WIDTH * 0.5, HEIGHT * 0.4);
+  textSet(0, 0, 0, WIDTH * 0.025);
+  text("스페이스 바를 눌러 복귀", WIDTH * 0.5, HEIGHT * 0.7);
+}
+
+function keep6() {
+  // 6번 장면 지속
+  if (key == " " && keyIsPressed) {
+    stat = 0;
+    change = true;
+  }
 }
 
 function setup() {
@@ -323,6 +388,7 @@ function draw() {
     else if (stat == 3) set3();
     else if (stat == 4) set4();
     else if (stat == 5) set5();
+    else if (stat == 6) set6();
     change = false;
   } else {
     if (stat == 0) keep0();
@@ -330,5 +396,7 @@ function draw() {
     else if (stat == 2) keep2();
     else if (stat == 3) keep3();
     else if (stat == 4) keep4();
+    else if (stat == 5) keep5();
+    else if (stat == 6) keep6();
   }
 }
