@@ -2,9 +2,32 @@ const WIDTH = 800;
 const HEIGHT = (WIDTH * 9) / 16;
 let stat = 0; // 0: 시작 전, 1: 규칙 안내, 2: 준비, 3: 점 표시, 4: 게임 중, 5: 결과 계산, 6: 끝
 let change = true;
+let centX, centY, rot, lvel, avel;
 let timeTrack1, timeTrack2, tmp;
-const show1 = new Array(100).fill([0, 0]);
-const show2 = new Array(100).fill([0, 0]);
+const show1 = [
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+];
+const show2 = [
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+];
 
 function fillAndLineSet(fr, fg, fb, sr, sg, sb, sw) {
   // 채우기 + 윤곽선 설정
@@ -21,6 +44,65 @@ function textSet(tr, tg, tb, ts) {
   fill(tr, tg, tb);
   noStroke();
   textSize(ts);
+}
+
+function mouseClicked() {
+  if (stat == 0) {
+    if (
+      (mouseX - WIDTH * 0.5) ** 2 + (mouseY - HEIGHT * 0.7) ** 2 <=
+      (WIDTH * 0.0625) ** 2
+    ) {
+      stat = 1;
+      change = true;
+    }
+  }
+}
+
+function drawGame() {
+  background(230);
+  fillAndLineSet(0, 150, 255, 0, 0, 0, 1);
+  for (let i = 0; i < 10; i++) {
+    circle(WIDTH * show1[i][0], HEIGHT * show1[i][1], WIDTH * 0.01);
+  }
+  fillAndLineSet(255, 100, 0, 0, 0, 0, 1);
+  for (let i = 0; i < 10; i++) {
+    circle(WIDTH * show2[i][0], HEIGHT * show2[i][1], WIDTH * 0.01);
+  }
+
+  fillAndLineSet(255, 0, 0, 255, 0, 0, 3);
+  circle(centX, centY, WIDTH * 0.02);
+  line(
+    centX + 3 * WIDTH * Math.cos(rot),
+    centY + 3 * WIDTH * Math.sin(rot),
+    centX - 3 * WIDTH * Math.cos(rot),
+    centY - 3 * WIDTH * Math.sin(rot)
+  );
+  line(
+    centX,
+    centY,
+    centX - 0.05 * WIDTH * Math.sin(rot),
+    centY + 0.05 * WIDTH * Math.cos(rot)
+  );
+  line(
+    centX - 0.05 * WIDTH * Math.sin(rot),
+    centY + 0.05 * WIDTH * Math.cos(rot),
+    centX -
+      0.05 * WIDTH * Math.sin(rot) +
+      0.02 * WIDTH * Math.cos(rot + (Math.PI * 4) / 3),
+    centY +
+      0.05 * WIDTH * Math.cos(rot) +
+      0.02 * WIDTH * Math.sin(rot + (Math.PI * 4) / 3)
+  );
+  line(
+    centX - 0.05 * WIDTH * Math.sin(rot),
+    centY + 0.05 * WIDTH * Math.cos(rot),
+    centX -
+      0.05 * WIDTH * Math.sin(rot) +
+      0.02 * WIDTH * Math.cos(rot + (Math.PI * 5) / 3),
+    centY +
+      0.05 * WIDTH * Math.cos(rot) +
+      0.02 * WIDTH * Math.sin(rot + (Math.PI * 5) / 3)
+  );
 }
 
 function set0() {
@@ -114,35 +196,44 @@ function keep2() {
 }
 
 function set3() {
-  // 3번 장면 시작
-  background(230);
-  fillAndLineSet(255, 255, 255, 0, 0, 0, 2);
   for (let i = 0; i < 10; i++) {
     tmp = i * 50 + Math.floor(50 * Math.random());
     show1[i][0] = pts1[tmp][0];
     show1[i][1] = pts1[tmp][1];
-    circle(WIDTH * pts1[tmp][0], HEIGHT * pts1[tmp][1], WIDTH * 0.01);
-  }
-
-  fillAndLineSet(0, 0, 0, 0, 0, 0, 2);
-  for (let i = 0; i < 10; i++) {
     tmp = i * 50 + Math.floor(50 * Math.random());
     show2[i][0] = pts2[tmp][0];
     show2[i][1] = pts2[tmp][1];
-    circle(WIDTH * pts2[tmp][0], HEIGHT * pts2[tmp][1], WIDTH * 0.01);
   }
+
+  centX = random(0, WIDTH);
+  centY = random(0, HEIGHT);
+  rot = Math.random() * 2 * Math.PI;
+  lvel = 0;
+  avel = 0;
+
+  drawGame();
 }
 
-function mouseClicked() {
-  if (stat == 0) {
-    if (
-      (mouseX - WIDTH * 0.5) ** 2 + (mouseY - HEIGHT * 0.7) ** 2 <=
-      (WIDTH * 0.0625) ** 2
-    ) {
-      stat = 1;
-      change = true;
-    }
-  }
+function keep3() {
+  lvel *= 0.99;
+  avel *= 0.95;
+
+  if (key === "a" && keyIsPressed) lvel += WIDTH / 3600;
+  else if (key === "d" && keyIsPressed) lvel -= WIDTH / 3600;
+  else if (key === "w" && keyIsPressed) avel += Math.PI / 450;
+  else if (key === "s" && keyIsPressed) avel -= Math.PI / 450;
+  lvel = Math.min(Math.max(lvel, -WIDTH / 120), WIDTH / 120);
+  avel = Math.min(Math.max(avel, -Math.PI / 15), Math.PI / 15);
+
+  centX += lvel * sin(rot);
+  centY -= lvel * cos(rot);
+  rot += avel;
+  centX = Math.min(Math.max(centX, 0), WIDTH);
+  centY = Math.min(Math.max(centY, 0), HEIGHT);
+  if (rot < 0) rot += 2 * Math.PI;
+  if (rot > 2 * Math.PI) rot -= 2 * Math.PI;
+
+  drawGame();
 }
 
 function setup() {
@@ -162,5 +253,6 @@ function draw() {
     if (stat == 0) keep0();
     else if (stat == 1) keep1();
     else if (stat == 2) keep2();
+    else if (stat == 3) keep3();
   }
 }
