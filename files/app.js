@@ -1,7 +1,9 @@
+const maxScoreShow = document.querySelector("h2");
 const WIDTH = 800;
 const HEIGHT = (WIDTH * 9) / 16;
 let stat = 0;
 let change = true;
+let maxScore = 0;
 let centX, centY, rot, lvel, avel, score;
 let timeTrack1, timeTrack2, tmp;
 const show1 = [
@@ -364,6 +366,10 @@ function set6() {
   text(`${score}점`, WIDTH * 0.5, HEIGHT * 0.4);
   textSet(0, 0, 0, WIDTH * 0.025);
   text("스페이스 바를 눌러 복귀", WIDTH * 0.5, HEIGHT * 0.7);
+  if (maxScore < score) {
+    maxScore = score;
+    maxScoreShow.innerText = `최고기록: ${maxScore}점`;
+  }
 }
 
 function keep6() {
